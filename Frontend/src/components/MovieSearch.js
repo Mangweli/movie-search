@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import { TextField, Button, Grid } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Movie from './Movie';
 
+import searchIcon from '../search.svg';
+import MovieCard from "./MovieCard";
+
+const API_URL = 'https://movie-search-o7wp.onrender.com/v1/movies/search/';
 
 const MovieSearch = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -12,48 +14,51 @@ const MovieSearch = () => {
         setSearchTerm(e.target.value);
     }
 
-    const searchMovies = () => {
-        axios.get(`/search?searchTerm=${searchTerm}`)
+    const searchMovies = (title) => {
+        axios.get(`${API_URL}${title}`)
             .then(response => {
-                setMovies(response.data.Search || [])
+                setMovies(response.data.data || []);
             })
             .catch(error => {
                 console.error('Error: ', error);
                 setMovies([]);
-            })
+            });
     }
 
+    useEffect(() => {
+        searchMovies('Superman');
+    }, []);
+
     return (
-        <div>
-            <h1>Movie Search</h1>
-            <Grid container spacing={2} alignItems='center'>
-                <Grid item xs= {8}>
-                    <TextField
-                        fullWidth
-                        variant='outlined'
-                        label = "Enter a movie Title"
-                        value = {searchTerm}
-                        onChange={handleChange}
-                    />
-                </Grid>
-                <Grid item>
-                    <Button
-                        variant='contained'
-                        onClick={searchMovies}
-                    >Search
-                    </Button>
-                </Grid>
-            </Grid>
-    
-            <div>
-                {
-                    movies.map(movie => (
-                        <Movie key={movie.imdbID} movie= {movie} />
-                    ))
-                }
+        <div className="app">
+            <h1>Movie Premiers</h1>
+
+            <div className="search">
+                <input
+                    placeholder="Search for movies"
+                    value={searchTerm}
+                    onChange={handleChange}
+                />
+                <img
+                    src={searchIcon}
+                    alt="search"
+                    onClick={() => searchMovies(searchTerm)}
+                />
             </div>
+
+            {movies.length > 0 ? (
+                <div className="container">
+                    {movies.map((movie, index) => (
+                        <MovieCard key={index} movie={movie} />
+                    ))}
+                </div>
+            ) : (
+                <div className="empty">
+                    <h2>No movies found</h2>
+                </div>
+            )}
         </div>
-    ); 
+    );
 }
 
 export default MovieSearch;
